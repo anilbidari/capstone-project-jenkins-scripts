@@ -1,0 +1,61 @@
+//change   sathiya0710 ( docker id to yours) and also use your dockerhub password
+node {
+    
+    stage('variables')
+    {
+        sh '''echo "BUILD_NUMBER" :: $BUILD_NUMBER
+            echo "BUILD_ID" :: $BUILD_ID
+            echo "BUILD_DISPLAY_NAME" :: $BUILD_DISPLAY_NAME
+            echo "JOB_NAME" :: $JOB_NAME
+            echo "JOB_BASE_NAME" :: $JOB_BASE_NAME
+            echo "BUILD_TAG" :: $BUILD_TAG
+            echo "EXECUTOR_NUMBER" :: $EXECUTOR_NUMBER
+            echo "NODE_NAME" :: $NODE_NAME
+            echo "NODE_LABELS" :: $NODE_LABELS
+            echo "WORKSPACE" :: $WORKSPACE
+            echo "JENKINS_HOME" :: $JENKINS_HOME
+            echo "JENKINS_URL" :: $JENKINS_URL
+            echo "BUILD_URL" ::$BUILD_URL
+            echo "JOB_URL" :: $JOB_URL'''
+        }
+        
+    stage('Git Clone') 
+    {
+       git 'https://github.com/anilbidari/cart.git'
+    }
+    
+    stage("Build Docker Image")
+    {
+        sh 'sudo docker buildx build -t sathiya0710/cart:V$BUILD_NUMBER .'
+    }
+    
+    stage('Login into Docker Hub')
+    {
+        sh 'sudo docker login -u sathiya0710 -p Password'
+    }
+    
+    stage('Upload Image to DockerHub')
+    {
+        sh 'sudo docker push sathiya0710/cart:V$BUILD_NUMBER'
+    }
+    
+    stage('Delete Container')
+    {
+        sh 'sudo docker rm -f cart'
+    }
+    
+    stage('Run Container')
+    {
+        sh 'sudo docker run -d --name cart -p 6001:5000 sathiya0710/cart:V$BUILD_NUMBER'
+    }
+    
+    stage('wait 30 secs')
+    {
+        sleep 30
+    }
+    
+    stage('verify app') 
+    {
+        sh 'curl http://localhost:6001'
+    }
+}
