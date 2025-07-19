@@ -21,7 +21,7 @@ node {
         
     stage('Git Clone') 
     {
-       git 'https://github.com/anilbidari/cart.git'
+       git branch: 'main', url: 'https://github.com/anilbidari/cart.git'
     }
     
     stage("Build Docker Image")
